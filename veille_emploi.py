@@ -29,6 +29,10 @@ from bs4 import BeautifulSoup
 CHECK_OPENCLASSROOMS = True
 CHECK_AMAZON_TOULOUSE = True
 
+# Mode test : envoie un message Discord de test puis s'arrête (ne vérifie aucun site).
+# Repassez à False une fois que vous avez confirmé que le message arrive bien.
+TEST_DISCORD_WEBHOOK = False
+
 # URL du webhook Discord à coller ici une fois créé (voir README.md)
 DISCORD_WEBHOOK_URL = "COLLEZ_VOTRE_URL_DE_WEBHOOK_ICI"
 
@@ -39,8 +43,11 @@ OPENCLASSROOMS_URL = "https://mentors.openclassrooms.com/jobs"
 AMAZON_URL = "https://www.amazon.jobs/content/fr/teams/fulfillment-and-operations/france"
 
 # Le site se fait parfois bloquer les requêtes sans en-tête "navigateur" -> on s'identifie comme un navigateur classique
+# Accept-Encoding limité à gzip/deflate : évite un bug connu de décompression zstd
+# dans certaines versions de requests/urllib3 (ex: distributions Anaconda).
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+    "Accept-Encoding": "gzip, deflate",
 }
 
 # ============================================================
@@ -169,6 +176,13 @@ def check_amazon(state: dict) -> None:
 
 def main() -> None:
     print(f"=== Vérification du {datetime.now().strftime('%Y-%m-%d %H:%M')} ===")
+
+    if TEST_DISCORD_WEBHOOK:
+        print("[TEST] Envoi d'un message de test sur Discord...")
+        send_discord_alert("✅ Test réussi : le script de veille d'offres d'emploi est bien connecté à ce salon.")
+        print("[TEST] Message envoyé (vérifiez votre salon Discord). N'oubliez pas de repasser TEST_DISCORD_WEBHOOK à False.")
+        return
+
     state = load_state()
 
     if CHECK_OPENCLASSROOMS:
