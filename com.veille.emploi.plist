@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Identifiant unique de la tâche -->
+    <key>Label</key>
+    <string>com.veille.emploi</string>
+
+    <!-- Commande exécutée : python3 + chemin vers le script -->
+    <!-- IMPORTANT : remplacez VOTRE_NOM et le chemin par les vôtres (voir README.md) -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/Users/VOTRE_NOM/veille-emploi/veille_emploi.py</string>
+    </array>
+
+    <!-- Heure d'exécution quotidienne : ici 9h00 -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- Rattrape l'exécution si le Mac était éteint/endormi à l'heure prévue -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- Logs : utile pour vérifier que tout fonctionne -->
+    <key>StandardOutPath</key>
+    <string>/Users/VOTRE_NOM/veille-emploi/log.txt</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/VOTRE_NOM/veille-emploi/log-erreur.txt</string>
+</dict>
+</plist>
