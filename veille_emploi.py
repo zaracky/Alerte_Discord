@@ -34,7 +34,8 @@ CHECK_AMAZON_TOULOUSE = True
 TEST_DISCORD_WEBHOOK = False
 
 # URL du webhook Discord à coller ici une fois créé (voir README.md)
-DISCORD_WEBHOOK_URL = "COLLEZ_VOTRE_URL_DE_WEBHOOK_ICI"
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1518361141242368070/n7WkFLHzjk6wKAjbUuJJXO18A9oWla274uMd3BNkvz4RnAkjHFhl1e-SOShALOqS2u42"
+
 # Fichier où l'état précédent est conservé (créé automatiquement au 1er lancement)
 STATE_FILE = Path(__file__).parent / "state.json"
 
@@ -49,9 +50,12 @@ AMAZON_CITY_NAME = "Toulouse"
 # Le site se fait parfois bloquer les requêtes sans en-tête "navigateur" -> on s'identifie comme un navigateur classique
 # Accept-Encoding limité à gzip/deflate : évite un bug connu de décompression zstd
 # dans certaines versions de requests/urllib3 (ex: distributions Anaconda).
+# OpenClassrooms /jobs retourne toujours un flux RSS (SPA côté client) -> on accepte XML explicitement.
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
     "Accept-Encoding": "gzip, deflate",
+    "Accept": "application/rss+xml, application/xml, text/xml, */*;q=0.8",
+    "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
 }
 
 # ============================================================
@@ -129,24 +133,25 @@ def hash_text(text: str) -> str:
 
 def check_openclassrooms(state: dict) -> None:
     try:
-        html = fetch_text(OPENCLASSROOMS_URL)
+        raw = fetch_text(OPENCLASSROOMS_URL)
     except Exception as e:
         print(f"[ERREUR] OpenClassrooms inaccessible : {e}")
         return
 
-    soup = parse_html(html)
-    page_text = soup.get_text(separator="\n")
+    # BeautifulSoup avec html.parser est tolérant aux caractères spéciaux mal
+    # encodés qui font planter le parseur XML strict (xml.etree). On cherche
+    # les balises <item> et leur contenu <title> directement dans le flux RSS.
+    soup = BeautifulSoup(raw, "html.parser")
+    items = soup.find_all("item")
+    titles = sorted(item.find("title").get_text(strip=True) for item in items if item.find("title"))
 
-    is_empty = "Aucune offre pour le moment" in page_text
-
-    if is_empty:
-        current_signature = "EMPTY"
+    if titles:
+        current_signature = hash_text("\n".join(titles))
+        is_empty = False
+        print(f"[DEBUG] OpenClassrooms : {len(titles)} offre(s) -> {titles}")
     else:
-        # Une ou plusieurs offres sont présentes : on capture le bloc principal
-        # pour détecter toute évolution (offre ajoutée, retirée, modifiée...)
-        match = re.search(r"Missions disponibles(.*?)(?:Connexion employé|$)", page_text, re.S)
-        block = match.group(1) if match else page_text
-        current_signature = hash_text(block.strip())
+        current_signature = "EMPTY"
+        is_empty = True
 
     previous_signature = state.get("openclassrooms")
 
@@ -154,9 +159,10 @@ def check_openclassrooms(state: dict) -> None:
         print("[INFO] OpenClassrooms : première exécution, état enregistré (pas d'alerte).")
     elif current_signature != previous_signature:
         if is_empty:
-            msg = "📋 **OpenClassrooms Mentors** : les offres ont disparu (page redevenue vide)."
+            msg = "📋 **OpenClassrooms Mentors** : les offres ont disparu (flux vide)."
         else:
-            msg = f"🎉 **OpenClassrooms Mentors** : changement détecté sur la page des missions !\n{OPENCLASSROOMS_URL}"
+            listing = "\n".join(f"• {t}" for t in titles)
+            msg = f"🎉 **OpenClassrooms Mentors** : changement détecté ({len(titles)} offre(s)) !\n{listing}\n{OPENCLASSROOMS_URL}"
         print(f"[ALERTE] {msg}")
         send_discord_alert(msg)
     else:
