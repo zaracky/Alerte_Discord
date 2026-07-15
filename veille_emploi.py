@@ -34,12 +34,11 @@ CHECK_AMAZON_TOULOUSE = True
 TEST_DISCORD_WEBHOOK = False
 
 # URL du webhook Discord à coller ici une fois créé (voir README.md)
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1518361141242368070/n7WkFLHzjk6wKAjbUuJJXO18A9oWla274uMd3BNkvz4RnAkjHFhl1e-SOShALOqS2u42"
-
+DISCORD_WEBHOOK_URL = 
 # Fichier où l'état précédent est conservé (créé automatiquement au 1er lancement)
 STATE_FILE = Path(__file__).parent / "state.json"
 
-OPENCLASSROOMS_URL = "https://mentors.openclassrooms.com/jobs"
+OPENCLASSROOMS_URL = "https://mentors.openclassrooms.com/jobs.rss"
 AMAZON_URL = "https://www.amazon.jobs/content/fr/teams/fulfillment-and-operations/france"
 
 # Nom exact de la ville Amazon à surveiller (doit correspondre au début du nom
