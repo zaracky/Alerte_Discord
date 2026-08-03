@@ -80,7 +80,7 @@ Si ces 3 tests passent, le système est validé de bout en bout : cron → scrip
 
 ## Premier envoi automatique réel
 
-`START_DATE` est fixé au **4 août 2026** dans `send_message.py` — donc demain, si tu déploies aujourd'hui. Le premier déclenchement automatique aura lieu à 8h UTC (soit 10h heure de Paris en août, heure d'été), sans action de ta part.
+`START_DATE` est fixé au **4 août 2026** dans `send_message.py` —  Le premier déclenchement automatique aura lieu à 8h UTC (soit 10h heure de Paris en août, heure d'été).
 
 ## Le 7 novembre 2027
 
