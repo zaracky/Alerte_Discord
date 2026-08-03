@@ -36,12 +36,20 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def send_to_discord(webhook_url, content, dry_run=False):
+EMBED_COLOR = 0x5865F2  # bleu discret, change si tu veux une autre couleur
+
+
+def send_to_discord(webhook_url, content, today, dry_run=False):
+    embed = {
+        "author": {"name": today.strftime("%d/%m/%Y")},
+        "description": content,
+        "color": EMBED_COLOR,
+    }
     if dry_run:
-        print(f"[DRY RUN] Message qui aurait été envoyé :\n{content}")
+        print(f"[DRY RUN] Embed qui aurait été envoyé :\n{json.dumps(embed, ensure_ascii=False, indent=2)}")
         return
     import requests
-    response = requests.post(webhook_url, json={"content": content}, timeout=15)
+    response = requests.post(webhook_url, json={"embeds": [embed]}, timeout=15)
     response.raise_for_status()
     print(f"Message envoyé (status {response.status_code}).")
 
@@ -85,7 +93,7 @@ def main():
             return
         with open(FINAL_MESSAGE_FILE, "r", encoding="utf-8") as f:
             final_message = f.read().strip()
-        send_to_discord(webhook_url, final_message, dry_run=dry_run)
+        send_to_discord(webhook_url, final_message, today, dry_run=dry_run)
         state["final_message_sent"] = True
         state["last_sent_date"] = today.isoformat()
         if not dry_run:
@@ -106,7 +114,7 @@ def main():
     messages = load_json(MESSAGES_FILE)
     message = pick_next_message(messages, state)
 
-    send_to_discord(webhook_url, message, dry_run=dry_run)
+    send_to_discord(webhook_url, message, today, dry_run=dry_run)
 
     state["last_sent_date"] = today.isoformat()
     if not dry_run:
