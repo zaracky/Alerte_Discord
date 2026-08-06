@@ -110,7 +110,13 @@ def main():
     if days_since_start % 2 != 0 and not force:
         print("Aujourd'hui n'est pas un jour d'envoi (rythme 1 jour sur 2). Rien à faire.")
         return
-
+      
+    # Sécurité anti-doublon : si un message a déjà été envoyé aujourd'hui
+    # (ex : cron GitHub + déclencheur externe qui se chevauchent), on ne renvoie pas.
+    if state.get("last_sent_date") == today.isoformat() and not force:
+        print("Un message a déjà été envoyé aujourd'hui. Rien à faire.")
+        return
+      
     messages = load_json(MESSAGES_FILE)
     message = pick_next_message(messages, state)
 
