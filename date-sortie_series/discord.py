@@ -10,6 +10,7 @@ def send_discord_message(content):
     if not webhook_url:
         print("DISCORD_WEBHOOK_URL manquante : message non envoyé.")
         return False
+    webhook_url = webhook_url.strip()
 
     payload = json.dumps({"content": content}).encode("utf-8")
     req = urllib.request.Request(

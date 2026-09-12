@@ -15,7 +15,9 @@ def _api_key():
     key = os.environ.get("TMDB_API_KEY")
     if not key:
         raise RuntimeError("TMDB_API_KEY manquante : vérifie le secret GitHub ou ton fichier .env")
-    return key
+    # Nettoie un éventuel espace ou retour à la ligne collé par erreur lors de la
+    # configuration (ex: copier-coller depuis un secret GitHub mal formé).
+    return key.strip()
 
 
 def _tmdb_fetch(pathname, max_retries=3, retry_delay_seconds=3):
