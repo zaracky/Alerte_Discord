@@ -1,0 +1,23 @@
+name: Digest hebdomadaire des séries
+
+on:
+  schedule:
+    # 17h00 UTC ≈ 18h00 heure de Paris en hiver (UTC+1) / 19h00 en été (UTC+2, heure d'été).
+    # GitHub Actions ne gère pas le changement d'heure automatiquement : un léger
+    # décalage d'1h est à prévoir selon la période de l'année. Pas un souci pour
+    # un digest hebdomadaire, mais à savoir.
+    - cron: '0 17 * * 0'   # tous les dimanches à 17h00 UTC
+  workflow_dispatch: {}     # permet aussi de le lancer manuellement depuis l'onglet Actions
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code du repository
+        uses: actions/checkout@v4
+
+      - name: Lancer le digest hebdomadaire
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python3 weekly_digest.py
